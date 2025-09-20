@@ -91,7 +91,7 @@ export async function convertAndDownload() {
             const headerElement = normDiv.querySelector('h3 span.jnenbez');
             const paragraphNumber = headerElement?.textContent.trim();
 
-            if (paragraphNumber && (paragraphNumber.startsWith('§') || paragraphNumber.startsWith('Art'))) {
+            if (paragraphNumber && (paragraphNumber.startsWith('§') || paragraphNumber.startsWith('Art') || paragraphNumber.startsWith('Anhang'))) {
                 const currentPath = pathSegments.join('/');
                 const paragraphTitle = normDiv.querySelector('h3 span.jnentitel')?.textContent.trim() || '';
                 const contentDiv = normDiv.querySelector('div.jnhtml');
@@ -144,7 +144,7 @@ export async function convertAndDownload() {
                         zip.file(filePath, fileContent);
                         const linkPath = `${fullPrefix}${currentPath ? `${currentPath}/` : ''}${fileNameBase}`;
                         markdownLinks.push({
-                            numberStr: paragraphNumber.replace('§', '').replace('Art', '').trim(),
+                            numberStr: paragraphNumber.replace('§', '').replace('Art', '').replace('Anhang', '').trim(),
                             link: `- [[${linkPath.replace(/\\/g, '/')}\]]`, 
                             embedLink: `![[${linkPath.replace(/\\/g, '/')}\]]`
                         });
