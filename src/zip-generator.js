@@ -34,6 +34,41 @@ export async function convertAndDownload() {
         let filesCreated = 0;
         let pathParts = {};
 
+        let preambleFrontmatter = '';
+        let globalFootnoteContent = '';
+
+        const mainJnnormDiv = parsedDoc.querySelector('div.jnnorm[id^="BJNR"]');
+        if (mainJnnormDiv) {
+            const jnHeader = mainJnnormDiv.querySelector('div.jnheader');
+            const jnZitat = mainJnnormDiv.querySelector('div.jnzitat');
+            const jnHtml = mainJnnormDiv.querySelector('div.jnhtml');
+            const jnFussnote = mainJnnormDiv.querySelector('div.jnfussnote');
+
+            if (jnHeader) {
+                const title = jnHeader.querySelector('h1 span.jnlangue')?.textContent.trim();
+                const abbr = jnHeader.querySelector('h1 span.jnamtabk')?.textContent.replace(/[()]/g, '').trim();
+                const ausfertigungsdatum = jnHeader.querySelector('p:nth-of-type(2)')?.textContent.replace('Ausfertigungsdatum:', '').trim();
+                if (title) preambleFrontmatter += `fullTitle: "${title}"\n`;
+                if (abbr) preambleFrontmatter += `abbr: "${abbr}"\n`;
+                if (ausfertigungsdatum) preambleFrontmatter += `ausfertigungsdatum: "${ausfertigungsdatum}"\n`;
+            }
+            if (jnZitat) {
+                const zitatText = jnZitat.querySelector('p:nth-of-type(2)')?.textContent.trim();
+                if (zitatText) preambleFrontmatter += `vollzitat: "${zitatText}"\n`;
+            }
+            if (jnHtml) {
+                let htmlText = jnHtml.textContent.trim();
+                const textToExclude = "Näheres zur Standangabe finden Sie im Menü unter Hinweise";
+                if (htmlText.includes(textToExclude)) {
+                    htmlText = htmlText.replace(textToExclude, '').trim();
+                }
+                if (htmlText) preambleFrontmatter += `standangaben: "${htmlText.replace(/\s+/g, ' ')}"\n`;
+            }
+            if (jnFussnote) {
+                globalFootnoteContent = htmlToMarkdown(jnFussnote).trim();
+            }
+        }
+
         const allNorms = parsedDoc.querySelectorAll('div.jnnorm');
 
         allNorms.forEach(normDiv => {
@@ -120,7 +155,14 @@ export async function convertAndDownload() {
         if (createFlowCheckbox.checked) {
             const tocEmbedLink = createTocCheckbox.checked ? `![[${fullPrefix}Inhaltsübersicht]]` : '';
             const embedsContent = markdownLinks.map(item => item.embedLink).join('\n\n---\n\n');
-            const fliesstextContent = `# ${lawTitle} im Fließtext\n\n${tocEmbedLink}\n\n---\n\n${embedsContent}`;
+            let fliesstextContent = `---\n`;
+            fliesstextContent += `title: "${lawTitle} im Fließtext"\n`;
+            fliesstextContent += preambleFrontmatter;
+            fliesstextContent += `---\n\n`;
+            fliesstextContent += `# ${lawTitle} im Fließtext\n\n${tocEmbedLink}\n\n---\n\n${embedsContent}`;
+            if (globalFootnoteContent) {
+                fliesstextContent += `\n\n---\n\n### Fußnote\n${globalFootnoteContent}`;
+            }
             zip.file(`${vaultFolderName}/Gesetz im Fließtext.md`, fliesstextContent);
             logMessage(`Gesetz im Fließtext.md erstellt.`);
         }
