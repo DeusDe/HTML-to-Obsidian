@@ -1,5 +1,5 @@
 // src/html-parser.js
-import { fileInput, summaryDiv, folderNameInput, convertButton } from './dom-elements.js';
+import { fileInput, summaryDiv, folderNameInput, convertButton, lawNameInput } from './dom-elements.js';
 import { logMessage, cleanFilename } from './utils.js';
 
 let currentFile = null;
@@ -37,6 +37,7 @@ export async function handleFiles(files) {
         const sectionCount = parsedDoc.querySelectorAll('div.jnnorm h2').length;
 
         folderNameInput.value = cleanFilename(lawAbbr || 'Gesetz');
+        lawNameInput.value = lawTitle || 'Gesetz';
         summaryDiv.querySelector('#summary-title span').textContent = `${lawTitle || 'Unbekannt'} (${lawAbbr || 'N/A'})`;
         summaryDiv.querySelector('#summary-paragraphs span').textContent = paragraphCount;
         summaryDiv.querySelector('#summary-sections span').textContent = sectionCount;

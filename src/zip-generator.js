@@ -1,5 +1,5 @@
 // src/zip-generator.js
-import { convertButton, folderNameInput, prefixInput, createTocCheckbox, createFlowCheckbox, tagsInput, lawNameInput } from './dom-elements.js';
+import { convertButton, folderNameInput, prefixInput, createTocCheckbox, createFlowCheckbox, tagsInput, lawNameInput, flattenFoldersCheckbox } from './dom-elements.js';
 import { logMessage, cleanFilename } from './utils.js';
 import { htmlToMarkdown } from './markdown-converter.js';
 import { getCurrentFile, getParsedDoc } from './html-parser.js';
@@ -36,6 +36,20 @@ export async function convertAndDownload() {
 
         let preambleFrontmatter = '';
         let globalFootnoteContent = '';
+        const allFootnoteDefinitions = new Map(); // Map to store footnote IDs and their content
+
+        // Collect all footnote definitions first
+        parsedDoc.querySelectorAll('div.jnnorm[id$="_FNS"]').forEach(footnoteDiv => {
+            const footnoteIdMatch = footnoteDiv.id.match(/BJNR\d+BJNE(\d+)_FNS/);
+            if (footnoteIdMatch && footnoteIdMatch[1]) {
+                const footnoteNumber = parseInt(footnoteIdMatch[1], 10);
+                const footnoteContentDiv = footnoteDiv.querySelector('div.jnhtml');
+                if (footnoteContentDiv) {
+                    const { markdown: footnoteMarkdown } = htmlToMarkdown(footnoteContentDiv); // Convert footnote content to markdown
+                    allFootnoteDefinitions.set(footnoteNumber, footnoteMarkdown.trim());
+                }
+            }
+        });
 
         const mainJnnormDiv = parsedDoc.querySelector('div.jnnorm[id^="BJNR"]');
         if (mainJnnormDiv) {
@@ -65,7 +79,9 @@ export async function convertAndDownload() {
                 if (htmlText) preambleFrontmatter += `standangaben: "${htmlText.replace(/\s+/g, ' ')}"\n`;
             }
             if (jnFussnote) {
-                globalFootnoteContent = htmlToMarkdown(jnFussnote).trim();
+                // Use htmlToMarkdown with the collected footnote definitions for globalFootnoteContent
+                const { markdown: globalFootnoteMarkdown } = htmlToMarkdown(jnFussnote, { footnoteMap: allFootnoteDefinitions });
+                globalFootnoteContent = globalFootnoteMarkdown.trim();
             }
         }
 
@@ -97,19 +113,10 @@ export async function convertAndDownload() {
                 const contentDiv = normDiv.querySelector('div.jnhtml');
 
                 if (contentDiv) {
-                    const markdownContent = htmlToMarkdown(contentDiv, { addAbsMarker: true });
-                    let footnoteDefinitions = '', footnoteIndex = 1;
+                    const { markdown: markdownContent, linkReferences } = htmlToMarkdown(contentDiv, { addAbsMarker: true, footnoteMap: allFootnoteDefinitions });
+                    let footnoteDefinitions = ''; // Footnote definitions are now handled by htmlToMarkdown
                     const currentId = normDiv.id;
-                    if (currentId) {
-                        const footnoteDiv = parsedDoc.querySelector(`#${currentId}_FNS`);
-                        if (footnoteDiv) {
-                            const footnoteContentDiv = footnoteDiv.querySelector('div.jnhtml');
-                            if (footnoteContentDiv) {
-                                footnoteDefinitions += `\n\n[^${footnoteIndex}]: ${htmlToMarkdown(footnoteContentDiv).replace(/\s+/g, ' ')}`;
-                                footnoteIndex++;
-                            }
-                        }
-                    }
+                    // The old footnote collection logic is removed as it's now handled by htmlToMarkdown
 
                     if (markdownContent.trim()) {
                         const lawAbbr = parsedDoc.querySelector('h1 span.jnamtabk')?.textContent.replace(/[()]/g, '').trim() || 'Gesetz';
@@ -138,11 +145,25 @@ export async function convertAndDownload() {
                         frontmatter += '---\n\n';
 
                         const fileNameBase = cleanFilename(`${paragraphNumber} ${paragraphTitle}`);
-                        const fileContent = frontmatter + (markdownContent + footnoteDefinitions).trim();
+                        let fileContent = frontmatter + (markdownContent + footnoteDefinitions).trim();
                         
-                        const filePath = `${vaultFolderName}/${currentPath ? `${currentPath}/` : ''}${fileNameBase}.md`;
+                        // Append link definitions to the end of the markdown content
+                        let linkDefinitionsMarkdown = '';
+                        if (linkReferences.size > 0) {
+                            linkDefinitionsMarkdown += '\n\n';
+                            linkReferences.forEach((id, url) => {
+                                linkDefinitionsMarkdown += `[${id}]: ${url}\n`;
+                            });
+                        }
+                        fileContent += linkDefinitionsMarkdown; // Append to the fileContent before zipping
+
+                        let articlePath = fileNameBase;
+                        if (!flattenFoldersCheckbox.checked) {
+                            articlePath = `${currentPath ? `${currentPath}/` : ''}${fileNameBase}`;
+                        }
+                        const filePath = `${vaultFolderName}/${articlePath}.md`;
                         zip.file(filePath, fileContent);
-                        const linkPath = `${fullPrefix}${currentPath ? `${currentPath}/` : ''}${fileNameBase}`;
+                        const linkPath = `${fullPrefix}${articlePath}`;
                         markdownLinks.push({
                             numberStr: paragraphNumber.replace('§', '').replace('Art', '').replace('Anhang', '').trim(),
                             link: `- [[${linkPath.replace(/\\/g, '/')}\]]`, 

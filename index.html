@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gesetz zu Obsidian Konverter</title>
+    <title>HTML zu Obsidian Konverter</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
@@ -16,44 +16,106 @@
                 <button id="theme-toggle">☀️</button>
             </div>
             
-            <div class="setting-item">
-                <label for="folderNameInput">Name des Hauptordners</label>
-                <input type="text" id="folderNameInput" placeholder="Wird automatisch gefüllt...">
-                <small>Der Name des ZIP-Archivs und des Wurzelordners darin.</small>
-            </div>
-
-            <div class="setting-item">
-                <label for="lawNameInput">Gesetz-Name (für Frontmatter)</label>
-                <input type="text" id="lawNameInput" placeholder="Wird automatisch gefüllt...">
-                <small>Der Wert für 'gesetz:' im Frontmatter. Standard ist 'Gesetz'.</small>
-            </div>
-            
-            <div class="setting-item">
-                <label for="prefixInput">
-                    Link-Präfix (Optional)
-                    <span class="tooltip-icon" data-tooltip="Der hier eingegebene Pfad wird allen Links in der 'Inhaltsübersicht.md' vorangestellt. Beispiel: 'Gesetze/Steuerrecht' führt zu Links wie '[[Gesetze/Steuerrecht/BBiG/...]]'.">?</span>
-                </label>
-                <input type="text" id="prefixInput" placeholder="z.B. 10_Gesetze/Steuerrecht">
-            </div>
-
-            <div class="setting-item">
-                <label for="tagsInput">
-                    Zusätzliche Tags (Optional)
-                    <span class="tooltip-icon" data-tooltip="Komma-getrennte Liste von Tags, die jedem generierten Markdown-Dokument hinzugefügt werden. Beispiel: 'Gesetz, Verfassung'.">?</span>
-                </label>
-                <input type="text" id="tagsInput" placeholder="z.B. Gesetz, Verfassung">
-                <small>Standard-Tags werden automatisch hinzugefügt.</small>
-            </div>
-
-            <div class="setting-item">
-                <label>Zusätzliche Dateien</label>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="createToc" checked>
-                    <label for="createToc">Inhaltsübersicht.md erstellen</label>
+            <div class="setting-group">
+                <div class="setting-group-header">
+                    <h3>Allgemeine Einstellungen</h3>
+                    <button class="toggle-button">▼</button>
                 </div>
-                <div class="checkbox-group">
-                    <input type="checkbox" id="createFlow" checked>
-                    <label for="createFlow">Gesetz im Fließtext.md erstellen</label>
+                <div class="setting-group-content">
+                    <div class="setting-item">
+                        <label for="folderNameInput">Name des Hauptordners</label>
+                        <input type="text" id="folderNameInput" placeholder="Wird automatisch gefüllt...">
+                        <small>Der Name des ZIP-Archivs und des Wurzelordners darin.</small>
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="lawNameInput">Gesetz-Name (für Frontmatter)</label>
+                        <input type="text" id="lawNameInput" placeholder="Wird automatisch gefüllt...">
+                        <small>Der Wert für 'gesetz:' im Frontmatter. Standard ist 'Gesetz'.</small>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <label for="prefixInput">
+                            Link-Präfix (Optional)
+                            <span class="tooltip-icon" data-tooltip="Pfad, der allen Links in der 'Inhaltsübersicht.md' vorangestellt wird. Beispiel: 'Gesetze/Steuerrecht' führt zu '[[Gesetze/Steuerrecht/BBiG/...]]'.">?</span>
+                        </label>
+                        <input type="text" id="prefixInput" placeholder="z.B. 10_Gesetze/Steuerrecht">
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="tagsInput">
+                            Zusätzliche Tags (Optional)
+                            <span class="tooltip-icon" data-tooltip="Komma-getrennte Liste von Tags, die jedem generierten Markdown-Dokument hinzugefügt werden. Beispiel: 'Gesetz, Verfassung'.">?</span>
+                        </label>
+                        <input type="text" id="tagsInput" placeholder="z.B. Gesetz, Verfassung">
+                        <small>Standard-Tags werden automatisch hinzugefügt.</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setting-group">
+                <div class="setting-group-header">
+                    <h3>Konvertierungsoptionen</h3>
+                    <button class="toggle-button">▼</button>
+                </div>
+                <div class="setting-group-content">
+                    <div class="setting-item">
+                        <label>Ordnerstruktur</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="flattenFolders" checked>
+                            <label for="flattenFolders">Alle Artikel in einem Ordner ablegen (flache Struktur)</label>
+                        </div>
+                    </div>
+                    <div class="setting-item">
+                        <label>Zusätzliche Dateien</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="createToc" checked>
+                            <label for="createToc">Inhaltsübersicht.md erstellen</label>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="createFlow" checked>
+                            <label for="createFlow">Gesetz im Fließtext.md erstellen</label>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <label>Markdown Formatierung</label>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="removeSuperscript" checked>
+                            <label for="removeSuperscript">Hochgestellte Zeichen entfernen (z.B. Fußnotenreferenzen)</label>
+                        </div>
+                        <div class="setting-item">
+                            <label for="tagsToRemoveInput">HTML Tags entfernen (Komma-getrennt)</label>
+                            <input type="text" id="tagsToRemoveInput" placeholder="z.B. div, span">
+                            <small>Entfernt die angegebenen HTML-Tags und deren Inhalt vollständig.</small>
+                        </div>
+                        <div class="setting-item">
+                            <label for="headingLevelAdjustment">Überschriften-Level anpassen</label>
+                            <select id="headingLevelAdjustment">
+                                <option value="0">Beibehalten (H1 bleibt H1)</option>
+                                <option value="1">Um 1 verschieben (H1 wird H2)</option>
+                                <option value="2">Um 2 verschieben (H1 wird H3)</option>
+                                <option value="3">Um 3 verschieben (H1 wird H4)</option>
+                                <option value="4">Um 4 verschieben (H1 wird H5)</option>
+                                <option value="5">Um 5 verschieben (H1 wird H6)</option>
+                            </select>
+                            <small>Verschiebt alle Überschriften-Level um den angegebenen Wert nach unten.</small>
+                        </div>
+                    </div>
+
+                    <div class="setting-item">
+                        <label for="imageHandling">Bildbehandlung</label>
+                        <select id="imageHandling">
+                            <option value="keep">Original-Links beibehalten</option>
+                            <option value="remove">Bilder entfernen</option>
+                        </select>
+                        <small>Steuert, wie Bilder im konvertierten Markdown behandelt werden.</small>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="convertExternalLinksToReferences">
+                        <label for="convertExternalLinksToReferences">Externe Links als Referenz-Links konvertieren</label>
+                    </div>
                 </div>
             </div>
         </div>
