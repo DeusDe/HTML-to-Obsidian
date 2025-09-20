@@ -32,7 +32,7 @@ export async function convertAndDownload() {
         const zip = new window.JSZip();
         const markdownLinks = [];
         let filesCreated = 0;
-        let pathParts = {};
+        let pathSegments = [];
 
         let preambleFrontmatter = '';
         let globalFootnoteContent = '';
@@ -72,6 +72,10 @@ export async function convertAndDownload() {
         const allNorms = parsedDoc.querySelectorAll('div.jnnorm');
 
         allNorms.forEach(normDiv => {
+            const titleAttribute = normDiv.getAttribute('title');
+            if (titleAttribute !== 'Einzelnorm' && titleAttribute !== 'Gliederung') {
+                return; // Skip this div if it's not an article or section header
+            }
             const isSectionHeader = normDiv.querySelector('h2');
             if (isSectionHeader) {
                 const spans = isSectionHeader.querySelectorAll('span');
@@ -79,10 +83,7 @@ export async function convertAndDownload() {
                     const mainTitle = spans[0].textContent.trim();
                     const subTitle = spans.length > 1 ? spans[1].textContent.trim() : '';
                     const combinedTitle = cleanFilename(`${mainTitle} ${subTitle}`);
-                    if (mainTitle.startsWith('Teil')) { pathParts = { teil: combinedTitle }; } 
-                    else if (mainTitle.startsWith('Kapitel')) { pathParts.kapitel = combinedTitle; delete pathParts.abschnitt; delete pathParts.unterabschnitt; } 
-                    else if (mainTitle.startsWith('Abschnitt')) { pathParts.abschnitt = combinedTitle; delete pathParts.unterabschnitt; } 
-                    else if (mainTitle.startsWith('Unterabschnitt')) { pathParts.unterabschnitt = combinedTitle; }
+                    pathSegments = [combinedTitle]; // Set pathSegments to just this section
                 }
                 return;
             }
@@ -90,8 +91,8 @@ export async function convertAndDownload() {
             const headerElement = normDiv.querySelector('h3 span.jnenbez');
             const paragraphNumber = headerElement?.textContent.trim();
 
-            if (paragraphNumber && paragraphNumber.startsWith('§')) {
-                const currentPath = [pathParts.teil, pathParts.kapitel, pathParts.abschnitt, pathParts.unterabschnitt].filter(Boolean).join('/');
+            if (paragraphNumber && (paragraphNumber.startsWith('§') || paragraphNumber.startsWith('Art'))) {
+                const currentPath = pathSegments.join('/');
                 const paragraphTitle = normDiv.querySelector('h3 span.jnentitel')?.textContent.trim() || '';
                 const contentDiv = normDiv.querySelector('div.jnhtml');
 
@@ -117,9 +118,9 @@ export async function convertAndDownload() {
                         frontmatter += `title: "${paragraphNumber} ${paragraphTitle}"\n`;
                         frontmatter += `aliases: ["${paragraphNumber}"]\n`;
                         frontmatter += `gesetz: "${lawAbbr}"\n`;
-                        if (pathParts.teil) frontmatter += `teil: "${pathParts.teil.replace(/-/g, ' ')}"\n`;
-                        if (pathParts.kapitel) frontmatter += `kapitel: "${pathParts.kapitel.replace(/-/g, ' ')}"\n`;
-                        if (pathParts.abschnitt) frontmatter += `abschnitt: "${pathParts.abschnitt.replace(/-/g, ' ')}"\n`;
+                        if (pathSegments[0]) frontmatter += `teil: "${pathSegments[0].replace(/-/g, ' ')}"\n`;
+                        if (pathSegments[1]) frontmatter += `kapitel: "${pathSegments[1].replace(/-/g, ' ')}"\n`;
+                        if (pathSegments[2]) frontmatter += `abschnitt: "${pathSegments[2].replace(/-/g, ' ')}"\n`;
                         frontmatter += `tags: [gesetz, ${lawAbbr.toLowerCase()}]\n`;
                         frontmatter += '---\n\n';
 
@@ -130,7 +131,7 @@ export async function convertAndDownload() {
                         zip.file(filePath, fileContent);
                         const linkPath = `${fullPrefix}${currentPath ? `${currentPath}/` : ''}${fileNameBase}`;
                         markdownLinks.push({
-                            numberStr: paragraphNumber.replace('§', '').trim(),
+                            numberStr: paragraphNumber.replace('§', '').replace('Art', '').trim(),
                             link: `- [[${linkPath.replace(/\\/g, '/')}\]]`, 
                             embedLink: `![[${linkPath.replace(/\\/g, '/')}\]]`
                         });
