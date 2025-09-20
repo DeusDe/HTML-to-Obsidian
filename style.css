@@ -146,10 +146,47 @@ h2 { color: var(--primary-color); margin: 0; }
     font-weight: normal;
 }
 
-#drop-area { border: 2px dashed var(--border-color); border-radius: 12px; padding: 1.5rem; text-align: center; background-color: var(--background-color); transition: background-color 0.2s, border-color 0.2s; }
-#drop-area.highlight { background-color: var(--primary-light); border-color: var(--primary-color); }
-#drop-label p { font-size: 1.2rem; font-weight: bold; color: var(--primary-color); margin: 0.5rem 0; }
-#drop-label span { color: var(--text-color-light); }
+.url-input-area {
+    margin-top: 1.5rem;
+    display: flex; /* Make it a flex container */
+    gap: 10px; /* Space between input and button */
+    align-items: center; /* Vertically align items */
+}
+
+.url-input-area input[type="text"] {
+    flex-grow: 1; /* Allow input to take available space */
+    padding: 10px;
+    border: 1px solid var(--border-color);
+    background-color: var(--panel-background);
+    color: var(--text-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+#fetchUrlButton {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 10px 20px; /* Slightly smaller padding than convertButton */
+    font-size: 0.9rem;
+    font-weight: bold;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* Prevent text from wrapping */
+}
+
+#fetchUrlButton:hover {
+    background-color: var(--primary-color); /* Keep same color for now, or a slightly darker shade */
+    opacity: 0.9;
+}
+
+#fetchUrlButton:disabled {
+    background-color: #9fa8da;
+    cursor: not-allowed;
+}
 
 #file-summary { background-color: var(--background-color); border: 1px solid var(--border-color); border-radius: 8px; padding: 1rem; margin-top: 1rem; text-align: left; }
 #file-summary h3 { margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; }
