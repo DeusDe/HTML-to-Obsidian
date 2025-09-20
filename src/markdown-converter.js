@@ -17,47 +17,59 @@ function convertTableToMarkdown(tableNode) {
 }
 
 export function htmlToMarkdown(element, { addAbsMarker = false } = {}) {
-    let markdown = '';
     let absCounter = 1;
 
-    function processChildren(node, indentLevel = 0) {
+    function processNode(node, indentLevel = 0) {
         let result = '';
         const indent = '  '.repeat(indentLevel);
-        node.childNodes.forEach(child => {
-            if (child.nodeType === Node.TEXT_NODE) {
-                result += child.textContent.replace(/\s+/g, ' ');
-            } else if (child.nodeType === Node.ELEMENT_NODE) {
-                const tagName = child.tagName.toLowerCase();
-                switch (tagName) {
-                    case 'sup': result += `<sup>${child.textContent}</sup>`; break;
-                    case 'dl':
-                        let dtContent = '';
-                        Array.from(child.children).forEach(listItem => {
-                            if (listItem.tagName.toLowerCase() === 'dt') dtContent = listItem.textContent.trim();
-                            if (listItem.tagName.toLowerCase() === 'dd') result += `\n${indent}- ${dtContent} ${processChildren(listItem, indentLevel + 1).trim()}`;
-                        });
-                        break;
-                    case 'div': case 'p':
-                        let absContent = processChildren(child, indentLevel).trim();
-                        if (addAbsMarker && tagName === 'div' && child.classList.contains('jurAbsatz')) {
-                            if (absContent) {
-                                absContent += ` ^abs${absCounter}`;
-                                absCounter++;
-                            }
+
+        if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent.replace(/\s+/g, ' ');
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+            const tagName = node.tagName.toLowerCase();
+            switch (tagName) {
+                case 'sup':
+                    result += `<sup>${node.textContent}</sup>`;
+                    break;
+                case 'dl':
+                    let dtContent = '';
+                    Array.from(node.children).forEach(listItem => {
+                        if (listItem.tagName.toLowerCase() === 'dt') dtContent = listItem.textContent.trim();
+                        if (listItem.tagName.toLowerCase() === 'dd') result += `\n${indent}- ${dtContent} ${processNode(listItem, indentLevel + 1).trim()}`;
+                    });
+                    break;
+                case 'table':
+                    result += convertTableToMarkdown(node);
+                    break;
+                case 'div':
+                case 'p':
+                    // Special handling for jurAbsatz divs to separate them with horizontal rules
+                    if (tagName === 'div' && node.classList.contains('jurAbsatz')) {
+                        let absContent = Array.from(node.childNodes).map(child => processNode(child, indentLevel)).join('').trim();
+                        if (addAbsMarker && absContent) {
+                            absContent += ` ^abs${absCounter}`;
+                            absCounter++;
                         }
-                        result += absContent + '\n';
-                        break;
-                    case 'table':
-                        result += convertTableToMarkdown(child);
-                        break;
-                    default:
-                        result += processChildren(child, indentLevel);
-                }
+                        result += absContent; // Don't add newline here, it will be added by join
+                    } else {
+                        result += Array.from(node.childNodes).map(child => processNode(child, indentLevel)).join('');
+                    }
+                    break;
+                default:
+                    result += Array.from(node.childNodes).map(child => processNode(child, indentLevel)).join('');
             }
-        });
+        }
         return result;
     }
-    
-    markdown = processChildren(element);
-    return markdown.replace(/(\s*\n\s*){2,}/g, '\n\n').trim();
+
+    // Collect all top-level jurAbsatz divs within the element
+    const jurAbsatzDivs = Array.from(element.querySelectorAll('div.jurAbsatz'));
+
+    if (jurAbsatzDivs.length > 0) {
+        const markdownParts = jurAbsatzDivs.map(div => processNode(div)).filter(part => part.trim() !== '');
+        return markdownParts.join('\n\n---\n\n').replace(/(\s*\\n\\s*){2,}/g, '\\n\\n').trim();
+    } else {
+        // Fallback for elements without jurAbsatz (e.g., footnotes, or other general content)
+        return Array.from(element.childNodes).map(child => processNode(child)).join('').replace(/(\s*\\n\\s*){2,}/g, '\\n\\n').trim();
+    }
 }

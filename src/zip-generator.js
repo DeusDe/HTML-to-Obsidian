@@ -79,6 +79,8 @@ export async function convertAndDownload() {
                         const lawAbbr = parsedDoc.querySelector('h1 span.jnamtabk')?.textContent.replace(/[()]/g, '').trim() || 'Gesetz';
                         
                         let frontmatter = '---\n';
+                        frontmatter += `title: "${paragraphNumber} ${paragraphTitle}"\n`;
+                        frontmatter += `aliases: ["${paragraphNumber}"]\n`;
                         frontmatter += `gesetz: "${lawAbbr}"\n`;
                         if (pathParts.teil) frontmatter += `teil: "${pathParts.teil.replace(/-/g, ' ')}"\n`;
                         if (pathParts.kapitel) frontmatter += `kapitel: "${pathParts.kapitel.replace(/-/g, ' ')}"\n`;
@@ -94,10 +96,8 @@ export async function convertAndDownload() {
                         const linkPath = `${fullPrefix}${currentPath ? `${currentPath}/` : ''}${fileNameBase}`;
                         markdownLinks.push({
                             numberStr: paragraphNumber.replace('§', '').trim(),
-                            link: `- [[${linkPath.replace(/\\/g, '/')}
-]]`,
-                            embedLink: `![[${linkPath.replace(/\\/g, '/')}
-]]`
+                            link: `- [[${linkPath.replace(/\\/g, '/')}\]]`, 
+                            embedLink: `![[${linkPath.replace(/\\/g, '/')}\]]`
                         });
                         filesCreated++;
                     }
