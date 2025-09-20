@@ -46,14 +46,11 @@
         <div class="action-panel">
             <h2>Konvertierung</h2>
             
-            <div id="drop-area">
-                <form class="drop-form">
-                    <input type="file" id="fileInput" accept=".html,.htm" hidden>
-                    <label for="fileInput" id="drop-label">
-                        <p>📄 HTML-Datei hierher ziehen</p>
-                        <span>oder klicken, um eine Datei auszuwählen</span>
-                    </label>
-                </form>
+
+
+            <div class="url-input-area">
+                <input type="text" id="urlInput" placeholder="Oder URL von gesetze-im-internet.de eingeben">
+                <button id="fetchUrlButton" class="button">HTML von URL laden</button>
             </div>
 
             <div id="file-summary" class="hidden">

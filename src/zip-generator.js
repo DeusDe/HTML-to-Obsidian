@@ -2,13 +2,13 @@
 import { convertButton, folderNameInput, prefixInput, createTocCheckbox, createFlowCheckbox } from './dom-elements.js';
 import { logMessage, cleanFilename } from './utils.js';
 import { htmlToMarkdown } from './markdown-converter.js';
-import { getCurrentFile, getParsedDoc } from './html-parser.js';
+import { getCurrentFileName, getParsedDoc } from './html-parser.js';
 
 export async function convertAndDownload() {
-    const currentFile = getCurrentFile();
+    const currentFileName = getCurrentFileName();
     const parsedDoc = getParsedDoc();
 
-    if (!currentFile || !parsedDoc) {
+    if (!currentFileName || !parsedDoc) {
         logMessage('Keine Datei zum Konvertieren gefunden.');
         return;
     }

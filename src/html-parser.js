@@ -1,34 +1,25 @@
 // src/html-parser.js
-import { fileInput, summaryDiv, folderNameInput, convertButton } from './dom-elements.js';
+import { summaryDiv, folderNameInput, convertButton } from './dom-elements.js';
 import { logMessage, cleanFilename } from './utils.js';
 
-let currentFile = null;
+let currentFileName = null;
 let parsedDoc = null;
 
-export function getCurrentFile() {
-    return currentFile;
+export function getCurrentFileName() {
+    return currentFileName;
 }
 
 export function getParsedDoc() {
     return parsedDoc;
 }
 
-export async function handleFiles(files) {
-    if (files.length === 0) return;
-    currentFile = files[0];
-    logMessage(`Datei ausgewählt: ${currentFile.name}`);
-    
-    try {
-        const reader = new FileReader();
-        const fileReadPromise = new Promise((resolve, reject) => {
-            reader.onload = () => resolve(reader.result);
-            reader.onerror = () => reject(reader.error);
-        });
-        reader.readAsText(currentFile, 'windows-1252');
-        const htmlContent = await fileReadPromise;
+export async function handleHtmlContent(htmlString, fileName = "URL_Download.html") {
+    logMessage(`Verarbeite HTML-Inhalt von: ${fileName}`);
+    currentFileName = fileName;
 
+    try {
         const parser = new DOMParser();
-        parsedDoc = parser.parseFromString(htmlContent, 'text/html');
+        parsedDoc = parser.parseFromString(htmlString, 'text/html');
 
         const lawTitle = parsedDoc.querySelector('h1 span.jnlangue')?.textContent.trim();
         const lawAbbr = parsedDoc.querySelector('h1 span.jnamtabk')?.textContent.replace(/[()]/g, '').trim();
@@ -54,7 +45,7 @@ export async function handleFiles(files) {
         summaryDiv.classList.remove('hidden');
 
     } catch (error) {
-        logMessage(`Fehler bei der Dateianalyse: ${error.message}`);
+        logMessage(`Fehler bei der HTML-Analyse: ${error.message}`);
         summaryDiv.classList.add('hidden');
         convertButton.disabled = true;
     }
