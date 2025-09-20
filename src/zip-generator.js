@@ -1,5 +1,5 @@
 // src/zip-generator.js
-import { convertButton, folderNameInput, prefixInput, createTocCheckbox, createFlowCheckbox } from './dom-elements.js';
+import { convertButton, folderNameInput, prefixInput, createTocCheckbox, createFlowCheckbox, tagsInput, lawNameInput } from './dom-elements.js';
 import { logMessage, cleanFilename } from './utils.js';
 import { htmlToMarkdown } from './markdown-converter.js';
 import { getCurrentFile, getParsedDoc } from './html-parser.js';
@@ -117,11 +117,24 @@ export async function convertAndDownload() {
                         let frontmatter = '---\n';
                         frontmatter += `title: "${paragraphNumber} ${paragraphTitle}"\n`;
                         frontmatter += `aliases: ["${paragraphNumber}"]\n`;
-                        frontmatter += `gesetz: "${lawAbbr}"\n`;
+                        let customLawName = lawNameInput.value.trim();
+                        frontmatter += `gesetz: "${customLawName || lawAbbr}"\n`;
                         if (pathSegments[0]) frontmatter += `teil: "${pathSegments[0].replace(/-/g, ' ')}"\n`;
                         if (pathSegments[1]) frontmatter += `kapitel: "${pathSegments[1].replace(/-/g, ' ')}"\n`;
                         if (pathSegments[2]) frontmatter += `abschnitt: "${pathSegments[2].replace(/-/g, ' ')}"\n`;
-                        frontmatter += `tags: [gesetz, ${lawAbbr.toLowerCase()}]\n`;
+                        let customTags = tagsInput.value.trim();
+                        let allTags = new Set();
+                        allTags.add('gesetz');
+                        allTags.add(lawAbbr.toLowerCase());
+                        if (customTags) {
+                            customTags.split(',').forEach(tag => {
+                                const trimmedTag = tag.trim();
+                                if (trimmedTag !== '') {
+                                    allTags.add(trimmedTag.toLowerCase());
+                                }
+                            });
+                        }
+                        frontmatter += `tags: [${Array.from(allTags).join(', ')}]\n`;
                         frontmatter += '---\n\n';
 
                         const fileNameBase = cleanFilename(`${paragraphNumber} ${paragraphTitle}`);

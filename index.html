@@ -21,6 +21,12 @@
                 <input type="text" id="folderNameInput" placeholder="Wird automatisch gefüllt...">
                 <small>Der Name des ZIP-Archivs und des Wurzelordners darin.</small>
             </div>
+
+            <div class="setting-item">
+                <label for="lawNameInput">Gesetz-Name (für Frontmatter)</label>
+                <input type="text" id="lawNameInput" placeholder="Wird automatisch gefüllt...">
+                <small>Der Wert für 'gesetz:' im Frontmatter. Standard ist 'Gesetz'.</small>
+            </div>
             
             <div class="setting-item">
                 <label for="prefixInput">
@@ -28,6 +34,15 @@
                     <span class="tooltip-icon" data-tooltip="Der hier eingegebene Pfad wird allen Links in der 'Inhaltsübersicht.md' vorangestellt. Beispiel: 'Gesetze/Steuerrecht' führt zu Links wie '[[Gesetze/Steuerrecht/BBiG/...]]'.">?</span>
                 </label>
                 <input type="text" id="prefixInput" placeholder="z.B. 10_Gesetze/Steuerrecht">
+            </div>
+
+            <div class="setting-item">
+                <label for="tagsInput">
+                    Zusätzliche Tags (Optional)
+                    <span class="tooltip-icon" data-tooltip="Komma-getrennte Liste von Tags, die jedem generierten Markdown-Dokument hinzugefügt werden. Beispiel: 'Gesetz, Verfassung'.">?</span>
+                </label>
+                <input type="text" id="tagsInput" placeholder="z.B. Gesetz, Verfassung">
+                <small>Standard-Tags werden automatisch hinzugefügt.</small>
             </div>
 
             <div class="setting-item">
