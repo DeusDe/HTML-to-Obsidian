@@ -24,7 +24,7 @@ export async function handleHtmlContent(htmlString, fileName = "URL_Download.htm
         const lawTitle = parsedDoc.querySelector('h1 span.jnlangue')?.textContent.trim();
         const lawAbbr = parsedDoc.querySelector('h1 span.jnamtabk')?.textContent.replace(/[()]/g, '').trim();
         const paragraphs = parsedDoc.querySelectorAll('div.jnnorm h3 span.jnenbez');
-        const paragraphCount = Array.from(paragraphs).filter(p => p.textContent.trim().startsWith('§')).length;
+                const paragraphCount = Array.from(paragraphs).filter(p => p.textContent.trim().startsWith('§') || p.textContent.trim().startsWith('Art')).length;
         const sectionCount = parsedDoc.querySelectorAll('div.jnnorm h2').length;
 
         folderNameInput.value = cleanFilename(lawAbbr || 'Gesetz');
