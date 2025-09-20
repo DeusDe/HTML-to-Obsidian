@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gesetz zu Obsidian Konverter</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+    <div class="main-container">
+        <div class="settings-panel">
+            <div class="settings-header">
+                <h2>Einstellungen</h2>
+                <button id="theme-toggle">☀️</button>
+            </div>
+            
+            <div class="setting-item">
+                <label for="folderNameInput">Name des Hauptordners</label>
+                <input type="text" id="folderNameInput" placeholder="Wird automatisch gefüllt...">
+                <small>Der Name des ZIP-Archivs und des Wurzelordners darin.</small>
+            </div>
+            
+            <div class="setting-item">
+                <label for="prefixInput">
+                    Link-Präfix (Optional)
+                    <span class="tooltip-icon" data-tooltip="Der hier eingegebene Pfad wird allen Links in der 'Inhaltsübersicht.md' vorangestellt. Beispiel: 'Gesetze/Steuerrecht' führt zu Links wie '[[Gesetze/Steuerrecht/BBiG/...]]'.">?</span>
+                </label>
+                <input type="text" id="prefixInput" placeholder="z.B. 10_Gesetze/Steuerrecht">
+            </div>
+
+            <div class="setting-item">
+                <label>Zusätzliche Dateien</label>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="createToc" checked>
+                    <label for="createToc">Inhaltsübersicht.md erstellen</label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="createFlow" checked>
+                    <label for="createFlow">Gesetz im Fließtext.md erstellen</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-panel">
+            <h2>Konvertierung</h2>
+            
+            <div id="drop-area">
+                <form class="drop-form">
+                    <input type="file" id="fileInput" accept=".html,.htm" hidden>
+                    <label for="fileInput" id="drop-label">
+                        <p>📄 HTML-Datei hierher ziehen</p>
+                        <span>oder klicken, um eine Datei auszuwählen</span>
+                    </label>
+                </form>
+            </div>
+
+            <div id="file-summary" class="hidden">
+                <h3>Datei-Analyse</h3>
+                <p id="summary-title"><strong>Titel:</strong> <span></span></p>
+                <p id="summary-paragraphs"><strong>Paragrafen:</strong> <span></span></p>
+                <p id="summary-sections"><strong>Abschnitte:</strong> <span></span></p>
+                <p id="summary-status"><strong>Status:</strong> <span></span></p>
+            </div>
+
+            <button id="convertButton" disabled>Umwandeln und Herunterladen</button>
+
+            <div id="log-container">
+                <pre id="log"></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+    <script type="module" src="src/main.js" defer></script>
+</body>
+</html>
